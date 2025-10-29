@@ -15,6 +15,8 @@ app.use((req,res,next) => {
   const token = req.cookies.access_token;
   req.session = { user: null }
 
+  if(!token) return next();
+
   try {
     const data = jwt.verify(token, SECRET_JWT_KEY);
     req.session.user = data;
@@ -33,17 +35,25 @@ app.post('/login', async (req,res)=>  {
 
   try{
     const user = await UserRepository.login({username, password})
-    const token = jwt.sign({ id: user._id, username: user.username}, SECRET_JWT_KEY, {
-      expiresIn: '1h'
-    })
+
+    const token = jwt.sign({ id: user._id, username: user.username}, SECRET_JWT_KEY, {expiresIn: '1m'})
+    const refreshToken = jwt.sign({ id: user._id, username: user.username}, SECRET_JWT_KEY, { expiresIn: '7d'})
+
+
     res
       .cookie('access_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 1000 * 60 * 60
+        maxAge: 1000 * 60 * 60, // 1 hora
       })
-      .send({ user, token }) 
+      .cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
+      })
+      .send({ user, token, refreshToken }) 
   } catch (error) {
     res.status(401).send(error.message)
   }
@@ -62,11 +72,55 @@ app.post('/register', async (req,res)=>  {
 
 })
 
-app.post('/logout', (req,res)=> {
+app.post('/logout', async (req, res) => {
+  const refreshToken = req.cookies.refresh_token;
+  if (refreshToken) {
+    try {
+      const { id } = jwt.verify(refreshToken, SECRET_JWT_KEY);
+      await UserRepository.deleteRefreshToken(id); // opcional
+    } catch {}
+  }
+
   res
     .clearCookie('access_token')
-    .json({ message: 'Logout successful'})
-})
+    .clearCookie('refresh_token')
+    .json({ message: 'Logout successful' });
+});
+
+app.post('/refresh', async (req, res) => {
+  const refreshToken = req.cookies.refresh_token;
+
+  if (!refreshToken) return res.status(401).send('No refresh token provided');
+
+  try {
+    // 🔍 Validar refresh token
+    const userData = jwt.verify(refreshToken, SECRET_JWT_KEY);
+
+    // (Opcional) Verificar que el token siga válido en DB
+    const storedToken = await UserRepository.getRefreshToken(userData.id);
+    if (storedToken !== refreshToken) {
+      return res.status(403).send('Invalid refresh token');
+    }
+
+    // ♻️ Crear nuevo access token
+    const newAccessToken = jwt.sign(
+      { id: userData.id, username: userData.username },
+      SECRET_JWT_KEY,
+      { expiresIn: '1h' }
+    );
+
+    res
+      .cookie('access_token', newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60,
+      })
+      .send({ message: 'Access token refreshed' });
+  } catch (error) {
+    res.status(403).send('Invalid or expired refresh token');
+  }
+});
 
 app.get('/protected', (req,res) => {
 
