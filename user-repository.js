@@ -9,6 +9,7 @@ const User = Schema('User', {
     _id: { type: String, required: true},
     username: { type: String, required: true },
     password: {type: String, required: true},
+    refreshToken: { type: String, required: false},
 })
 
 export class UserRepository {
@@ -44,11 +45,33 @@ export class UserRepository {
 
         const isValid = await bcrypt.compare (password, user.password);
         if(!isValid) throw new Error('password is invalid');
-        // quitarle propiedades a un objeto
+        // esto es para quitarle propiedades a un objeto
         const { password: _, ...publicUser } = user
 
         return publicUser;
     } 
+
+    static async saveRefreshToken ({userId, token}) {
+        const user = User.findOne({ _id: userId });
+        if (!user) throw new Error('User not found');
+
+        user.refreshToken = token;
+        user.save();
+    }
+
+    static async getRefreshToken({userId}){
+        const user = User.findOne({ _id: userId });
+        return user?.refreshToken;
+    }
+
+    static async deleteRefreshToken({userId}) {
+        const user = User.findOne({ _id: userId});
+        if(!user) return;
+
+        user.refreshToken = null;
+        user.save();0
+    }
+
 }
 
 class Validation {

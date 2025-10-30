@@ -54,6 +54,7 @@ app.post('/login', async (req,res)=>  {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
       })
       .send({ user, token, refreshToken }) 
+      await UserRepository.saveRefreshToken(user._id, refreshToken);
   } catch (error) {
     res.status(401).send(error.message)
   }
@@ -93,16 +94,13 @@ app.post('/refresh', async (req, res) => {
   if (!refreshToken) return res.status(401).send('No refresh token provided');
 
   try {
-    // 🔍 Validar refresh token
     const userData = jwt.verify(refreshToken, SECRET_JWT_KEY);
 
-    // (Opcional) Verificar que el token siga válido en DB
     const storedToken = await UserRepository.getRefreshToken(userData.id);
     if (storedToken !== refreshToken) {
       return res.status(403).send('Invalid refresh token');
     }
 
-    // ♻️ Crear nuevo access token
     const newAccessToken = jwt.sign(
       { id: userData.id, username: userData.username },
       SECRET_JWT_KEY,
