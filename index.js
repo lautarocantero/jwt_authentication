@@ -2,7 +2,7 @@ import express from 'express'
 import { PORT, ACCESS_SECRET, REFRES_SECRET } from './config.js'
 import jwt from 'jsonwebtoken'
 import cookieParser from 'cookie-parser'
-import { UserRepository } from './user-repository.js'
+import { UserModel } from './models/user.js'
 import authRoutes from './routes/auth.routes.js'
 import protectedRoutes from './routes/protected.routes.js'
 
@@ -36,7 +36,7 @@ app.use(async (req, res, next) => {
     if (error.name === 'TokenExpiredError' && refreshToken) {
       try {
         const userData = jwt.verify(refreshToken, REFRES_SECRET);
-        const storedToken = await UserRepository.getRefreshToken({ userId: userData.id });
+        const storedToken = await UserModel.getRefreshToken({ userId: userData.id });
 
         if (storedToken === refreshToken) {
           const newAccessToken = jwt.sign(
@@ -63,8 +63,9 @@ app.use(async (req, res, next) => {
   }
 });
 
+// utilizo las rutas en su respectivo path
 app.use('/', authRoutes)
-app.use('/', protectedRoutes)
+app.use('/protected', protectedRoutes)
 
 
 app.listen(PORT, () => {

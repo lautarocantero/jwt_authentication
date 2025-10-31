@@ -1,7 +1,8 @@
 import DBLocal from 'db-local';
 import crypto from "crypto";
 import bcrypt from 'bcrypt';
-import { SALT_ROUNDS } from './config.js';
+import { SALT_ROUNDS } from '../config.js';
+
 const { Schema } = new DBLocal({ path: './db'});
 
 // el shcema es basicamente una interfaz, referencia para la en bd
@@ -12,7 +13,7 @@ const User = Schema('User', {
     refreshToken: { type: String, required: false},
 })
 // modelo con las acciones static que utilizaran los endpoints
-export class UserRepository {
+export class UserModel {
     static async create ({ username, password }) {
         // validaciones
         Validation.username(username);

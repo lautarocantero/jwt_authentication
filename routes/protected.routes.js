@@ -1,14 +1,9 @@
 import express from 'express'
+import { home } from '../controllers/protected.routes.js';
 
 const router = express.Router();
 
-router.get('/protected', (req,res) => {
-  const { user } = req.session;
-  if(!user) return res.status(403).send('Acces not authorized');
-
-  res.render('protected', user) 
-
-})
+router.get('/',home)
 
 const protectedRoutes = router;
 

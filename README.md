@@ -11,8 +11,8 @@ Proyecto básico de autenticación con **Express**, **JWT (JSON Web Tokens)** y 
 - cookie-parser (para manejar cookies en el navegador)  
 
 ## Instalación  
-1. Clona este repositorio:  
-   git clone https://github.com/tuusuario/jwt_authentication.git  
+1. Clonar este repositorio:  
+   git clone https://github.com/lautaroncantero/jwt_authentication.git  
    cd jwt_authentication  
 
 2. Instala las dependencias:  
@@ -43,5 +43,4 @@ jwt_authentication/
 - Conectar con una base de datos (MongoDB, PostgreSQL, etc.)  
 - Añadir validación de entrada (por ejemplo con express-validator)  
 - Mejorar el manejo de errores y la estructura de carpetas  
-- Implementar expiración y refresco de tokens  
 
