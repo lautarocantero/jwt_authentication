@@ -4,14 +4,14 @@ import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from './config.js';
 const { Schema } = new DBLocal({ path: './db'});
 
-
+// el shcema es basicamente una interfaz, referencia para la en bd
 const User = Schema('User', {
     _id: { type: String, required: true},
     username: { type: String, required: true },
     password: {type: String, required: true},
     refreshToken: { type: String, required: false},
 })
-
+// modelo con las acciones static que utilizaran los endpoints
 export class UserRepository {
     static async create ({ username, password }) {
         // validaciones
@@ -23,9 +23,12 @@ export class UserRepository {
         const user = User.findOne({ username });
         if (user) throw new Error('username already exists');
 
+        // id que no se repite (baja posibilidad)
         const id = crypto.randomUUID();
+        // guardo el password con hash
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
+        //creo el usuario con la info
         User.create({
             _id: id,
             username,
@@ -37,12 +40,13 @@ export class UserRepository {
     }
 
     static async login ({ username, password }) { 
+        //validacion
         Validation.username(username);
         Validation.password(password);
-
+        // hago login solo si existe uno con el mismo name
         const user = User.findOne({ username });
         if(!user) throw new Error('username does not exist');  
-
+        // hasheo la password que ingrego, para compararla con la password hasheada que tengo registrada
         const isValid = await bcrypt.compare (password, user.password);
         if(!isValid) throw new Error('password is invalid');
         // esto es para quitarle propiedades a un objeto
@@ -52,9 +56,10 @@ export class UserRepository {
     } 
 
     static async saveRefreshToken ({userId, token}) {
+        //busco el usuario
         const user = User.findOne({ _id: userId });
         if (!user) throw new Error('User not found');
-
+        // refresco el token 
         user.refreshToken = token;
         user.save();
     }
@@ -69,11 +74,11 @@ export class UserRepository {
         if(!user) return;
 
         user.refreshToken = null;
-        user.save();0
+        user.save();
     }
 
 }
-
+// validaciones que utilizan las acciones static
 class Validation {
     static username (username) {
         if(typeof username !== 'string') throw new Error('username must be a string')
