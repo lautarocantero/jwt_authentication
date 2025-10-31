@@ -26,6 +26,7 @@ export class UserRepository {
         // id que no se repite (baja posibilidad)
         const id = crypto.randomUUID();
         // guardo el password con hash
+        //  .hash devuelve una promesa agrego await, para evitar bloquear el thread 
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         //creo el usuario con la info

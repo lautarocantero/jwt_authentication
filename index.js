@@ -5,9 +5,11 @@ import cookieParser from 'cookie-parser'
 import { UserRepository } from './user-repository.js'
 import authRoutes from './routes/auth.routes.js'
 import protectedRoutes from './routes/protected.routes.js'
+
+
 // creo app de express
 const app = express()
-
+// renderizo con ejs
 app.set('view engine', 'ejs')
 // middleware para poder leer los json de los body de los endpoints
 app.use(express.json()) 
