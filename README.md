@@ -1,6 +1,8 @@
-# jwt_authentication
+
 # 🛡️ JWT Authentication  
 Proyecto básico de autenticación con **Express**, **JWT (JSON Web Tokens)** y **bcrypt**. Permite registrar y autenticar usuarios, manejando tokens de sesión mediante cookies.  
+
+Este proyecto sirve como molde base para implementar autenticación con JWT en aplicaciones Node.js.. Su estructura modular y funcionalidad básica están pensadas para ser reutilizadas y adaptadas fácilmente en futuros desarrollos. Ideal para comenzar nuevos proyectos con una base sólida de autenticación ya integrada.
 
 ## Tecnologías utilizadas  
 - Node.js  
@@ -38,9 +40,3 @@ jwt_authentication/
 - **Registro de usuario:** Hashea la contraseña con bcrypt antes de guardarla y devuelve un token JWT tras el registro exitoso.  
 - **Inicio de sesión:** Verifica las credenciales y genera un nuevo token JWT, guardándolo en una cookie para mantener la sesión.  
 - **Protección de rutas:** Middleware para validar el token JWT en rutas privadas.  
-
-## Próximos pasos  
-- Conectar con una base de datos (MongoDB, PostgreSQL, etc.)  
-- Añadir validación de entrada (por ejemplo con express-validator)  
-- Mejorar el manejo de errores y la estructura de carpetas  
-
